@@ -1,59 +1,45 @@
 package com.example.api_conexion;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
-import java.util.Locale;
 
-public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.ProductoViewHolder> {
+public class ProductoAdapter extends ArrayAdapter<Producto> {
 
-    private List<Producto> listaProductos;
-
-    public ProductoAdapter(List<Producto> listaProductos) {
-        this.listaProductos = listaProductos;
-    }
-
-    @NonNull
-    @Override
-    public ProductoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_producto, parent, false);
-        return new ProductoViewHolder(view);
+    public ProductoAdapter(Context context, List<Producto> listaProductos) {
+        super(context, 0, listaProductos);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ProductoViewHolder holder, int position) {
-        Producto producto = listaProductos.get(position);
-        holder.tvNombre.setText(producto.getNombre());
-        holder.tvDescripcion.setText(producto.getDescripcion());
+    public View getView(int position, View convertView, ViewGroup parent) {
 
-        holder.tvPrecio.setText(String.format(Locale.US, "Precio: %.2f", producto.getPrecio()));
-        holder.tvStock.setText(String.format(Locale.US, "Stock: %d", producto.getStock()));
-    }
+        Producto producto = getItem(position);
 
-    @Override
-    public int getItemCount() {
-        return listaProductos.size();
-    }
-    
-    public static class ProductoViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNombre;
-        TextView tvDescripcion;
-        TextView tvPrecio;
-        TextView tvStock;
 
-        public ProductoViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvNombre = itemView.findViewById(R.id.tv_nombre);
-            tvDescripcion = itemView.findViewById(R.id.tv_descripcion);
-            tvPrecio = itemView.findViewById(R.id.tv_precio);
-            tvStock = itemView.findViewById(R.id.tv_stock);
+        if (convertView == null) {
+            convertView = LayoutInflater.from(getContext())
+                    .inflate(R.layout.fila_producto, parent, false);
         }
+
+
+        TextView txtNombre = convertView.findViewById(R.id.lblNombreProducto);
+        TextView txtPrecio = convertView.findViewById(R.id.lblPrecioProducto);
+
+
+        if (producto != null) {
+            if (txtNombre != null) {
+                txtNombre.setText(producto.getProducto1());
+            }
+            if (txtPrecio != null) {
+                txtPrecio.setText("Precio: " + producto.getPrecio() + " Bs");
+            }
+        }
+
+        return convertView;
     }
 }
