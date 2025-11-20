@@ -1,7 +1,6 @@
 package com.example.api_conexion;
 
 import android.os.Bundle;
-// import android.os.StrictMode; // LINEA ELIMINADA: Ya no es necesaria
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,17 +10,12 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,12 +23,10 @@ public class MainActivity extends AppCompatActivity {
     private List<Producto> listaProductos = new ArrayList<>();
     private ProductoAdapter adapter;
 
-    private String apiUrl = "http://demoapi.somee.com/api/productos";
-
     private EditText txtProducto, txtPrecio, txtUnidad, txtCategoria;
     private Button btnAgregar;
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +35,15 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        // Inicializamos Retrofit
+        apiService = RetrofitClient.getApiService();
+
         Button btnInit = findViewById(R.id.init);
-        btnInit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cargarPantallaDatos();
-            }
-        });
+        btnInit.setOnClickListener(v -> cargarPantallaDatos());
     }
 
     private void cargarPantallaDatos() {
-        setContentView(R.layout.layaout_datos);
+        setContentView(R.layout.layaout_datos); // Nota: Te sugiero renombrar este archivo a layout_datos en el futuro
 
         listView = findViewById(R.id.recyclerViewProductos);
         txtProducto = findViewById(R.id.txtProducto);
@@ -62,112 +52,69 @@ public class MainActivity extends AppCompatActivity {
         txtCategoria = findViewById(R.id.txtCategoria);
         btnAgregar = findViewById(R.id.btn_agregar);
 
+        // Cargar datos al iniciar esta vista
         cargarProductos();
 
         if (btnAgregar != null) {
-            btnAgregar.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    agregarProducto();
-                }
-            });
+            btnAgregar.setOnClickListener(v -> agregarProducto());
         }
     }
 
     private void agregarProducto() {
+        // 1. Obtener datos de la UI
         String prodName = txtProducto.getText().toString();
         String prodUnidad = txtUnidad.getText().toString();
         String prodCat = txtCategoria.getText().toString();
         String precioStr = txtPrecio.getText().toString();
 
-        executor.execute(() -> {
-            try {
-                URL url = new URL(apiUrl);
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("POST");
-                con.setRequestProperty("Content-Type", "application/json; utf-8");
-                con.setDoOutput(true);
+        if (prodName.isEmpty() || precioStr.isEmpty()) {
+            Toast.makeText(this, "Nombre y precio son obligatorios", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                JSONObject nuevo = new JSONObject();
-                nuevo.put("idEmpresa", 1);
-                nuevo.put("producto1", prodName);
+        double precioVal;
+        try {
+            precioVal = Double.parseDouble(precioStr);
+        } catch (NumberFormatException e) {
+            precioVal = 0.0;
+        }
 
-                double precioVal = 0.0;
-                try {
-                    precioVal = Double.parseDouble(precioStr);
-                } catch (NumberFormatException e) {
-                    precioVal = 0.0;
-                }
-                nuevo.put("precio", precioVal);
+        // 2. Crear el objeto Producto
+        Producto nuevoProducto = new Producto(1, prodName, precioVal, prodUnidad, prodCat);
 
-                nuevo.put("unidadMedida", prodUnidad);
-                nuevo.put("categoria", prodCat);
+        // 3. Llamada POST con Retrofit
+        apiService.agregarProducto(nuevoProducto).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Agregado correctamente", Toast.LENGTH_SHORT).show();
 
-                con.getOutputStream().write(nuevo.toString().getBytes());
+                    txtProducto.setText("");
+                    txtPrecio.setText("");
+                    txtUnidad.setText("");
+                    txtCategoria.setText("");
+                    txtProducto.requestFocus();
 
-                int respuesta = con.getResponseCode();
-
-                if (respuesta == HttpURLConnection.HTTP_OK || respuesta == HttpURLConnection.HTTP_CREATED) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(MainActivity.this, "Agregado correctamente", Toast.LENGTH_SHORT).show();
-                        cargarProductos(); // Recargar la lista
-
-                        // Limpiar campos
-                        txtProducto.setText("");
-                        txtPrecio.setText("");
-                        txtUnidad.setText("");
-                        txtCategoria.setText("");
-                        txtProducto.requestFocus();
-                    });
+                    cargarProductos();
                 } else {
-                    final int codigo = respuesta;
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error código: " + codigo, Toast.LENGTH_SHORT).show());
+                    Toast.makeText(MainActivity.this, "Error código: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
+            }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                final String errorMsg = e.getMessage();
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error al agregar: " + errorMsg, Toast.LENGTH_SHORT).show());
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Fallo de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void cargarProductos() {
-        executor.execute(() -> {
-            try {
-                URL url = new URL(apiUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder respuesta = new StringBuilder();
-                String linea;
-
-                while ((linea = reader.readLine()) != null) {
-                    respuesta.append(linea);
-                }
-                reader.close();
-
-
-                JSONArray obj = new JSONArray(respuesta.toString());
-                List<Producto> tempLista = new ArrayList<>();
-
-                for (int i = 0; i < obj.length(); i++) {
-                    JSONObject productoJson = obj.getJSONObject(i);
-                    Producto p = new Producto();
-
-                    p.setIdProducto(productoJson.optInt("idProducto", 0));
-                    p.setProducto1(productoJson.optString("producto1", "Sin nombre"));
-                    p.setPrecio(productoJson.optDouble("precio", 0.0));
-                    p.setUnidadMedida(productoJson.optString("unidadMedida", "ND"));
-                    p.setCategoria(productoJson.optString("categoria", "ND"));
-
-                    tempLista.add(p);
-                }
-
-                runOnUiThread(() -> {
+        apiService.obtenerProductos().enqueue(new Callback<List<Producto>>() {
+            @Override
+            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
                     listaProductos.clear();
-                    listaProductos.addAll(tempLista);
+                    listaProductos.addAll(response.body());
 
                     if (adapter == null) {
                         adapter = new ProductoAdapter(MainActivity.this, listaProductos);
@@ -175,12 +122,14 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         adapter.notifyDataSetChanged();
                     }
-                });
+                } else {
+                    Toast.makeText(MainActivity.this, "Error al obtener datos", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                final String errorMsg = e.getMessage();
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error al cargar: " + errorMsg, Toast.LENGTH_LONG).show());
+            @Override
+            public void onFailure(Call<List<Producto>> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

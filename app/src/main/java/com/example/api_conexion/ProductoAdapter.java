@@ -33,7 +33,7 @@ public class ProductoAdapter extends ArrayAdapter<Producto> {
 
         if (producto != null) {
             if (txtNombre != null) {
-                txtNombre.setText(producto.getProducto1());
+                txtNombre.setText(producto.getNombreProducto());
             }
             if (txtPrecio != null) {
                 txtPrecio.setText("Precio: " + producto.getPrecio() + " Bs");

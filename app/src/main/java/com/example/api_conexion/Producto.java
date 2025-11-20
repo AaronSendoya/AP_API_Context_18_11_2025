@@ -1,77 +1,58 @@
 package com.example.api_conexion;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Producto {
+
+    // @SerializedName vincula el campo del JSON con tu variable Java
+    @SerializedName("idProducto")
     private int idProducto;
+
+    @SerializedName("idEmpresa")
     private int idEmpresa;
-    private String producto1;
+
+    @SerializedName("producto1") // El nombre raro que viene de tu API
+    private String nombreProducto;
+
+    @SerializedName("precio")
     private double precio;
+
+    @SerializedName("unidadMedida")
     private String unidadMedida;
+
+    @SerializedName("categoria")
     private String categoria;
-//    private String nombre;
-//    private String descripcion;
 
-    private int stock;
+    // Constructor vacío (necesario para Retrofit/Gson)
+    public Producto() {}
 
-    public Producto(){}
-
-    public Producto(String nombre, String descripcion, double precio, int stock) {
-    }
-
-    public int getIdEmpresa() {
-        return idEmpresa;
-    }
-
-    public void setIdEmpresa(int idEmpresa) {
+    // Constructor para enviar datos (POST)
+    public Producto(int idEmpresa, String nombreProducto, double precio, String unidadMedida, String categoria) {
         this.idEmpresa = idEmpresa;
-    }
-
-    public int getIdProducto() {
-        return idProducto;
-    }
-
-    public void setIdProducto(int idProducto) {
-        this.idProducto = idProducto;
-    }
-
-    public String getProducto1() {
-        return producto1;
-    }
-
-    public void setProducto1(String producto1) {
-        this.producto1 = producto1;
-    }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(double precio) {
+        this.nombreProducto = nombreProducto;
         this.precio = precio;
-    }
-
-    public String getUnidadMedida() {
-        return unidadMedida;
-    }
-
-    public void setUnidadMedida(String unidadMedida) {
         this.unidadMedida = unidadMedida;
-    }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(String categoria) {
         this.categoria = categoria;
     }
 
-//    public Producto(String nombre, String descripcion, double precio, int stock) {
-//        this.nombre = nombre;
-//        this.descripcion = descripcion;
-//        this.precio = precio;
-//        this.stock = stock;
-//    }
+    // Getters y Setters
+    public int getIdProducto() { return idProducto; }
+    public void setIdProducto(int idProducto) { this.idProducto = idProducto; }
 
-    // Getters
+    public int getIdEmpresa() { return idEmpresa; }
+    public void setIdEmpresa(int idEmpresa) { this.idEmpresa = idEmpresa; }
+
+    public String getNombreProducto() { return nombreProducto; }
+    public void setNombreProducto(String nombreProducto) { this.nombreProducto = nombreProducto; }
+
+    public double getPrecio() { return precio; }
+    public void setPrecio(double precio) { this.precio = precio; }
+
+    public String getUnidadMedida() { return unidadMedida; }
+    public void setUnidadMedida(String unidadMedida) { this.unidadMedida = unidadMedida; }
+
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+
 
 }
