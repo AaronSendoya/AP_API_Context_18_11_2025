@@ -1,84 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/page_background"
+    android:focusableInTouchMode="true">
 
+    <!-- 1. HEADER SUPERIOR -->
+    <View
+        android:id="@+id/headerView"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/header_bg"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title_inventory"
+        android:textColor="@color/text_white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/headerView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/headerView" />
+
+    <!-- 2. FORMULARIO (Contenedor Blanco) -->
     <LinearLayout
-        android:id="@+id/linearLayout2"
+        android:id="@+id/formContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_input"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/headerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <EditText
+            android:id="@+id/txtProducto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input"
+            android:hint="@string/hint_product"
+            android:inputType="textCapWords|textAutoComplete"
+            android:autofillHints="name"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/txtPrecio"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input"
+                android:hint="@string/hint_price"
+                android:inputType="numberDecimal"
+                android:importantForAutofill="no"
+                android:minHeight="48dp"
+                android:padding="12dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
+                android:layout_marginEnd="8dp"/>
+
+            <EditText
+                android:id="@+id/txtUnidad"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input"
+                android:hint="@string/hint_unit"
+                android:inputType="text"
+                android:importantForAutofill="no"
+                android:minHeight="48dp"
+                android:padding="12dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"/>
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/txtCategoria"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input"
+            android:hint="@string/hint_category"
+            android:inputType="textCapWords"
+            android:autofillHints="postalAddress"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:layout_marginBottom="12dp"/>
+
+        <Button
+            android:id="@+id/btn_agregar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_add_product"
+            android:backgroundTint="@color/brand_primary"
+            android:textColor="@color/text_white"
+            android:textStyle="bold"
+            android:minHeight="48dp"/>
+
+    </LinearLayout>
+
+    <!-- 3. SEPARADOR LISTA -->
+    <TextView
+        android:id="@+id/lblListHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/list_header"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/formContainer"/>
+
+    <!-- 4. LISTA DE PRODUCTOS -->
+    <ListView
+        android:id="@+id/recyclerViewProductos"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:divider="@null"
+        android:dividerHeight="8dp"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayoutTop">
-
-        <ListView
-            android:id="@+id/recyclerViewProductos"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayoutTop"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="8dp">
-
-                <EditText
-                    android:id="@+id/txtProducto"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Nombre del Producto"
-                    android:inputType="text"/>
-
-                <EditText
-                    android:id="@+id/txtPrecio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Precio"
-                    android:inputType="numberDecimal"/>
-
-                <EditText
-                    android:id="@+id/txtUnidad"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Unidad de Medida"
-                    android:inputType="text"/>
-
-                <EditText
-                    android:id="@+id/txtCategoria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Categoría"
-                    android:inputType="text"/>
-
-                <Button
-                    android:id="@+id/btn_agregar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Agregar Producto" />
-
-            </LinearLayout>
-        </ScrollView>
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/lblListHeader" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

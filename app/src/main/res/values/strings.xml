@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">api_conexion</string>
+
+    <string name="app_name_display">API Connect</string>
+    <string name="intro_welcome">Bienvenido</string>
+    <string name="intro_description">Gestiona, sincroniza y administra tus productos en tiempo real de forma sencilla y rápida.</string>
+    <string name="btn_start_text">Comenzar Ahora</string>
+    <string name="footer_version">Versión 1.0 • Dev Mode</string>
+
+    <!-- Textos Pantalla Datos -->
+    <string name="title_inventory">Gestión de Inventario</string>
+    <string name="hint_product">Nombre del Producto</string>
+    <string name="hint_price">Precio (Bs)</string>
+    <string name="hint_unit">Unidad (ej. kg, pza)</string>
+    <string name="hint_category">Categoría</string>
+    <string name="btn_add_product">Agregar al Inventario</string>
+    <string name="list_header">Productos Recientes</string>
 </resources>

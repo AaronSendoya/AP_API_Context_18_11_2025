@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="10dp"
-    android:layout_marginBottom="5dp"
-    android:background="#E0E0E0">
+    android:padding="16dp"
+    android:layout_marginBottom="8dp"
+    android:background="#F5F5F5"
+    android:elevation="2dp">
 
     <TextView
         android:id="@+id/lblNombreProducto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nombre del Producto"
+        tools:text="Nombre del Producto de Ejemplo"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#000000"/>
+        android:textColor="#212121"
+        android:layout_marginBottom="4dp"/>
 
     <TextView
         android:id="@+id/lblPrecioProducto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Precio: 0.0 Bs"
+        tools:text="Precio: 150.0 Bs"
         android:textSize="16sp"
-        android:textColor="#4CAF50"/>
+        android:textStyle="bold"
+        android:textColor="#2E7D32"/>
 
 </LinearLayout>

@@ -1,7 +1,7 @@
 package com.example.api_conexion;
 
 import android.os.Bundle;
-import android.os.StrictMode;
+// import android.os.StrictMode; // LINEA ELIMINADA: Ya no es necesaria
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,6 +20,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText txtProducto, txtPrecio, txtUnidad, txtCategoria;
     private Button btnAgregar;
+
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void cargarPantallaDatos() {
         setContentView(R.layout.layaout_datos);
-
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
 
         listView = findViewById(R.id.recyclerViewProductos);
         txtProducto = findViewById(R.id.txtProducto);
@@ -73,101 +75,113 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void agregarProducto() {
-        try {
-            URL url = new URL(apiUrl);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setDoOutput(true);
+        String prodName = txtProducto.getText().toString();
+        String prodUnidad = txtUnidad.getText().toString();
+        String prodCat = txtCategoria.getText().toString();
+        String precioStr = txtPrecio.getText().toString();
 
-            JSONObject nuevo = new JSONObject();
-            nuevo.put("idEmpresa", 1);
-            nuevo.put("producto1", txtProducto.getText().toString());
-
-            double precioVal = 0.0;
+        executor.execute(() -> {
             try {
-                precioVal = Double.parseDouble(txtPrecio.getText().toString());
-            } catch (NumberFormatException e) {
-                precioVal = 0.0;
+                URL url = new URL(apiUrl);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("POST");
+                con.setRequestProperty("Content-Type", "application/json; utf-8");
+                con.setDoOutput(true);
+
+                JSONObject nuevo = new JSONObject();
+                nuevo.put("idEmpresa", 1);
+                nuevo.put("producto1", prodName);
+
+                double precioVal = 0.0;
+                try {
+                    precioVal = Double.parseDouble(precioStr);
+                } catch (NumberFormatException e) {
+                    precioVal = 0.0;
+                }
+                nuevo.put("precio", precioVal);
+
+                nuevo.put("unidadMedida", prodUnidad);
+                nuevo.put("categoria", prodCat);
+
+                con.getOutputStream().write(nuevo.toString().getBytes());
+
+                int respuesta = con.getResponseCode();
+
+                if (respuesta == HttpURLConnection.HTTP_OK || respuesta == HttpURLConnection.HTTP_CREATED) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(MainActivity.this, "Agregado correctamente", Toast.LENGTH_SHORT).show();
+                        cargarProductos(); // Recargar la lista
+
+                        // Limpiar campos
+                        txtProducto.setText("");
+                        txtPrecio.setText("");
+                        txtUnidad.setText("");
+                        txtCategoria.setText("");
+                        txtProducto.requestFocus();
+                    });
+                } else {
+                    final int codigo = respuesta;
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error código: " + codigo, Toast.LENGTH_SHORT).show());
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                final String errorMsg = e.getMessage();
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error al agregar: " + errorMsg, Toast.LENGTH_SHORT).show());
             }
-            nuevo.put("precio", precioVal);
-
-            nuevo.put("unidadMedida", txtUnidad.getText().toString());
-            nuevo.put("categoria", txtCategoria.getText().toString());
-
-            con.getOutputStream().write(nuevo.toString().getBytes());
-
-            int respuesta = con.getResponseCode();
-
-            if (respuesta == HttpURLConnection.HTTP_OK || respuesta == HttpURLConnection.HTTP_CREATED) {
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity.this, "Agregado correctamente", Toast.LENGTH_SHORT).show();
-                    cargarProductos();
-
-                    txtProducto.setText("");
-                    txtPrecio.setText("");
-                    txtUnidad.setText("");
-                    txtCategoria.setText("");
-                    txtProducto.requestFocus();
-                });
-            } else {
-                final int codigo = respuesta;
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error código: " + codigo, Toast.LENGTH_SHORT).show());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            final String errorMsg = e.getMessage();
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error al agregar: " + errorMsg, Toast.LENGTH_SHORT).show());
-        }
+        });
     }
 
     private void cargarProductos() {
-        try {
-            URL url = new URL(apiUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+        executor.execute(() -> {
+            try {
+                URL url = new URL(apiUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder respuesta = new StringBuilder();
-            String linea;
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder respuesta = new StringBuilder();
+                String linea;
 
-            while ((linea = reader.readLine()) != null) {
-                respuesta.append(linea);
-            }
-
-            reader.close();
-
-            listaProductos.clear();
-
-            JSONArray obj = new JSONArray(respuesta.toString());
-
-            for (int i = 0; i < obj.length(); i++) {
-                JSONObject productoJson = obj.getJSONObject(i);
-                Producto p = new Producto();
-
-                p.setIdProducto(productoJson.optInt("idProducto", 0));
-                p.setProducto1(productoJson.optString("producto1", "Sin nombre"));
-                p.setPrecio(productoJson.optDouble("precio", 0.0));
-                p.setUnidadMedida(productoJson.optString("unidadMedida", "ND"));
-                p.setCategoria(productoJson.optString("categoria", "ND"));
-
-                listaProductos.add(p);
-            }
-
-            runOnUiThread(() -> {
-                if (adapter == null) {
-                    adapter = new ProductoAdapter(MainActivity.this, listaProductos);
-                    listView.setAdapter(adapter);
-                } else {
-                    adapter.notifyDataSetChanged();
+                while ((linea = reader.readLine()) != null) {
+                    respuesta.append(linea);
                 }
-            });
+                reader.close();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            final String errorMsg = e.getMessage();
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error al cargar: " + errorMsg, Toast.LENGTH_LONG).show());
-        }
+
+                JSONArray obj = new JSONArray(respuesta.toString());
+                List<Producto> tempLista = new ArrayList<>();
+
+                for (int i = 0; i < obj.length(); i++) {
+                    JSONObject productoJson = obj.getJSONObject(i);
+                    Producto p = new Producto();
+
+                    p.setIdProducto(productoJson.optInt("idProducto", 0));
+                    p.setProducto1(productoJson.optString("producto1", "Sin nombre"));
+                    p.setPrecio(productoJson.optDouble("precio", 0.0));
+                    p.setUnidadMedida(productoJson.optString("unidadMedida", "ND"));
+                    p.setCategoria(productoJson.optString("categoria", "ND"));
+
+                    tempLista.add(p);
+                }
+
+                runOnUiThread(() -> {
+                    listaProductos.clear();
+                    listaProductos.addAll(tempLista);
+
+                    if (adapter == null) {
+                        adapter = new ProductoAdapter(MainActivity.this, listaProductos);
+                        listView.setAdapter(adapter);
+                    } else {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                final String errorMsg = e.getMessage();
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error al cargar: " + errorMsg, Toast.LENGTH_LONG).show());
+            }
+        });
     }
 }
