@@ -23,7 +23,6 @@ public class Producto {
     @SerializedName("categoria")
     private String categoria;
 
-    // Constructor vacío (necesario para Retrofit/Gson)
     public Producto() {}
 
     // Constructor para enviar datos (POST)
